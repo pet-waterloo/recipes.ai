@@ -1,0 +1,131 @@
+
+
+.infotab-container {
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+    height: 100%;
+
+    align-items: center;
+    justify-content: center;
+
+    grid-area: info;
+
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+
+    overflow-y: hidden;
+}
+
+
+.infotab-container h1 {
+    text-align: center;
+
+    font-size: 1.5em;
+    font-weight: bold;
+    margin: 0.5em;
+}
+
+
+.infotab-scrollable {
+    flex: 1;
+    height: 100%;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+
+    border-radius: var(--border-radius);
+    border: 1px solid var(--theme-tertiary);
+}
+
+.infotab-scrollable::-webkit-scrollbar {
+    width: 5px;
+}
+.infotab-scrollable::-webkit-scrollbar-thumb {
+    background-color: var(--theme-secondary);
+    border-radius: 20px;
+}
+
+
+.infotab-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    height: 30px;
+
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    background: var(--theme-tertiary);
+
+    margin: 0.5em;
+    padding: 0.5em;
+}
+
+.infotab-footer img {
+    height: 30px;
+    align-self: center;
+}
+
+
+/*  */
+.infotab-card {
+    display: grid;
+    grid-template-columns: 1fr 6fr;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: var(--border-radius);    
+    box-shadow: var(--box-shadow);
+
+    margin: 0.5em;
+    margin-top: 1rem;
+    margin-right: 5px;
+    padding: 3px;
+
+}
+
+.infotab-card:hover {
+    background-color: var(--theme-secondary);
+    transform: scale(1.015);
+
+    transition: background-color 0.5s, transform 0.3s;
+}
+
+.infotab-card img {
+    width: 30px;
+    align-self: center;
+}
+
+.infotab-card h1 {
+    font-size: 1em;
+    font-weight: bold;
+    margin: 0.5em;
+
+    text-align: left;
+}
+
+.infotab-button {
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+
+    background-color: var(--theme-main);
+
+    margin: 0.5em;
+    padding: 3px;
+    font-size: 1em;
+}
+
+.infotab-button h1 {
+    text-align: left;
+    font-size: 1em;
+    font-weight: bold;
+    margin: 0.5em;
+}
+
+/*  */
+.end-extra-space {
+    height: 10px;
+}

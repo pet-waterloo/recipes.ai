@@ -1,0 +1,58 @@
+
+
+/* App.css */
+
+:root {
+  --border-radius: 5px;
+  --box-shadow: 0 0 10px 3px rgba(0, 0, 0, 0.1);
+
+  --theme-main: #A2FFCC;
+  --theme-secondary: #c0f9da;
+  --theme-tertiary: #d9ffea;
+}
+
+html, body {
+  display: flex;
+
+  background: linear-gradient(180deg, #ffffff, #CCFFe3);
+  justify-content: center;
+  
+  margin: 0px;
+  height: 100%;
+  width: 100%;
+
+  overflow-y: hidden;
+}
+
+#root {
+
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  height: 100%;
+  width: 100%;
+
+  font-family: "Inter", sans-serif;
+  font-weight: bold;
+  color: black;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+
+  height: 97%;
+  padding: 1rem;
+}
+
+.container-grid {
+  height: 100%;
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: 250px 2fr;
+  grid-template-areas:
+    "info chatbox";
+  column-gap: 20px;
+
+}
