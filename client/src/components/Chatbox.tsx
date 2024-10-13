@@ -5,7 +5,7 @@ import './Chatbox.css'
 
 import sendIcon from '../assets/send.png'
 
-
+import {BACKEND_IP, MAX_MESSAGE_LENGTH} from '../constants'
 
 interface ChatItemProps {
     chat_text: string;
@@ -25,7 +25,7 @@ interface MessageProps {
 interface AIChatState {
     responding: boolean;
     response: string;
-    response_time: number;
+    lastAIDiv: HTMLDivElement | null;
 }
 
 
@@ -68,9 +68,9 @@ const UserChat: React.FC<UserChatProps> = ({chat_text}) => {
 const AIChat: React.FC<AIChatProps> = ({chat_text}) => {
 
     return (
-        <span className="ai-chat">
+        <div className="ai-chat">
             <ChatItem chat_text={chat_text} avatar_url={"https://upload.wikimedia.org/wikipedia/en/a/a6/Pok%C3%A9mon_Pikachu_art.png"}/>
-        </span>
+        </div>
     )
 
 };
@@ -78,18 +78,31 @@ const AIChat: React.FC<AIChatProps> = ({chat_text}) => {
 
 const Chatbox = () => {
     const [messages, setMessagesState] = React.useState<MessageProps[]>([]);
+    const [lastAIDiv, setLastAIDiv] = React.useState<HTMLDivElement | null>(null);
+    const [aiState, setAIState] = React.useState<AIChatState>({responding: false, response: "", lastAIDiv: lastAIDiv});
 
     const chatboxRef = useRef(null);
     const [text, setText] = React.useState("");
 
-    const handleTextChange  = (event) => {
+    const handleTextChange  = (event: any) => {
+        if (event.target.value.length > MAX_MESSAGE_LENGTH) {
+            return;
+        }
+        // update text
         setText(event.target.value);
     }
-    const handleTextSubmit = (event) => {
+    const handleTextSubmit = (event: any) => {
         var data = text;
         // check if has text even
         if (data.trim() === "") {
             console.log("there was no text");
+            return;
+        }
+
+        // check if ai is responding
+        if (aiState.responding) {
+            // cannot send
+            console.log("ai is responding");
             return;
         }
 
@@ -100,9 +113,25 @@ const Chatbox = () => {
 
         setText("");
         console.log(data);
+
+        aiState.responding = true;
+
+        // send a request to the server
+        fetch(BACKEND_IP + "/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({text: data})
+        }).then(response => {
+            console.log(response);
+
+            // TOOD -  create a new AI div + receive requests awaited or something
+
+        });
         
     }
-    const handleTextKeyDown = (event) => {
+    const handleTextKeyDown = (event: any) => {
         if (event.key === "Enter" && !event.shiftKey) {
             event.preventDefault();
             handleTextSubmit(event);
@@ -135,9 +164,9 @@ const Chatbox = () => {
                 </div>
                 <div className="chatbox-text">
                     <textarea value={text} onChange={handleTextChange} onKeyDown={handleTextKeyDown} placeholder="Type a message..." />
-                    {/* <button onClick={handleTextSubmit}>
+                    <button onClick={handleTextSubmit}>
                         <img src={sendIcon} width={32} height={32} alt="sendicon" />
-                    </button> */}
+                    </button>
                 </div>
             </div>
         </>

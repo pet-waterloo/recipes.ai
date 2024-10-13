@@ -89,10 +89,10 @@ class Recipe(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     # and the categorization objects
-    cuisine = models.CharField(max_length=64, choices=CUISINE_CHOICES)
-    meal_type = models.CharField(max_length=64, choices=MEAL_TYPE_CHOICES)
-    style = models.CharField(max_length=64, choices=STYLE_CHOICES)
-    difficulty = models.CharField(max_length=64, choices=DIFFICULTY_CHOICES)
+    cuisine = models.CharField(max_length=64, choices=CUISINE_CHOICES, null=True)
+    meal_type = models.CharField(max_length=64, choices=MEAL_TYPE_CHOICES, null=True)
+    style = models.CharField(max_length=64, choices=STYLE_CHOICES, null=True)
+    difficulty = models.CharField(max_length=64, choices=DIFFICULTY_CHOICES, null=True)
 
     def __str__(self):
         return f"{self.title} - {self.cuisine} - {self.meal_type} - {self.style} - {self.difficulty}"

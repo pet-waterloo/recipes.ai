@@ -5,6 +5,8 @@ import React from 'react';
 import './InfoTab.css';
 import logo from "../assets/logo.png";
 
+import BACKEND_IP from '../constants';
+
 
 const InfoTabCard = ({ image_url, card_title }) => {
 

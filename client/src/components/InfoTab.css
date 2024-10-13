@@ -91,7 +91,7 @@
     background-color: var(--theme-secondary);
     transform: scale(1.015);
 
-    transition: background-color 0.5s, transform 0.3s;
+    transition: background-color 0.25s, transform 0.3s;
 }
 
 .infotab-card img {

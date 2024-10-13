@@ -62,6 +62,22 @@
     resize: none;
 }
 
+.chatbox-text button {
+    padding: 10px;
+    border-radius: 5px;
+    background-color: var(--theme-main);
+    color: white;
+    cursor: pointer;
+
+    box-shadow: var (--box-shadow);
+    border: solid 2px white;
+}
+.chatbox-text button:hover {
+    background-color: var(--theme-secondary-dark);
+
+    transition: background-color 0.25s;
+}
+
 
 /*  */
 .chat-item {
@@ -72,7 +88,7 @@
     padding: 5px 15px;
 
     border-radius: var(--border-radius);
-    background-color: rgba(184, 233, 211, 0.87);
+    background-color: var(--theme-tertiary-dark);
 }
 
 .chat-item img {

@@ -16,11 +16,19 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
+
+from .views import PingView
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("api/", include("recipes.urls")),
+    # api
+    # path("ai/", RecipeListCreateView.as_view(), name="ai-prompt"),
 
-    path("api/", include("api.urls")),
-]
+    # pinging
+    path("ping/", PingView.as_view(), name="ping"),
+
+]   
+
+
+# https://docs.djangoproject.com/en/5.1/topics/auth/default/#:~:text=If%20you%20have%20an%20authenticated,with%20a%20login()%20function.&text=To%20log%20a%20user%20in,session%2C%20using%20Django's%20session%20framework.
+# login

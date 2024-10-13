@@ -7,8 +7,13 @@
   --box-shadow: 0 0 10px 3px rgba(0, 0, 0, 0.1);
 
   --theme-main: #A2FFCC;
+  --theme-main-dark: #00b894;
+
   --theme-secondary: #c0f9da;
+  --theme-secondary-dark: #93cead;
+
   --theme-tertiary: #d9ffea;
+  --theme-tertiary-dark: #b8e3db;
 }
 
 html, body {

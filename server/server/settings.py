@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     # -- space for new apps --
     "rest_framework",
     "recipes",  # add new app here
+    "api",
 ]
 
 
