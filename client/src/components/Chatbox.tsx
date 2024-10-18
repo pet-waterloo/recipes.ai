@@ -7,6 +7,14 @@ import sendIcon from '../assets/send.png'
 
 import {BACKEND_IP, MAX_MESSAGE_LENGTH} from '../constants'
 
+import { CohereClientV2 } from 'cohere-ai'
+
+
+const COHERE = new CohereClientV2({
+  token: '9HktGAxtxhvzTGcEb7UmVl1Px8M9SYv5Z9z5fpsp',
+});
+
+
 interface ChatItemProps {
     chat_text: string;
     avatar_url?: string;
@@ -15,17 +23,18 @@ interface UserChatProps {
     chat_text: string;
 };
 interface AIChatProps {
-    chat_text: string;
+    chatData: string;
 };
 interface MessageProps {
     chat_text: string;
     isAI: boolean;
+    index: number;
 };
-
 interface AIChatState {
     responding: boolean;
-    response: string;
-    lastAIDiv: HTMLDivElement | null;
+}
+interface ChatRequest {
+    message: string;
 }
 
 
@@ -65,24 +74,30 @@ const UserChat: React.FC<UserChatProps> = ({chat_text}) => {
     )
 }
 
-const AIChat: React.FC<AIChatProps> = ({chat_text}) => {
-
-    return (
-        <div className="ai-chat">
-            <ChatItem chat_text={chat_text} avatar_url={"https://upload.wikimedia.org/wikipedia/en/a/a6/Pok%C3%A9mon_Pikachu_art.png"}/>
-        </div>
-    )
+const AIChat: React.FC<AIChatProps> = ({chatData}) => {
+    return [
+        (
+            <div className="ai-chat">
+                <ChatItem chat_text={chatData} avatar_url={"https://upload.wikimedia.org/wikipedia/en/a/a6/Pok%C3%A9mon_Pikachu_art.png"}/>
+            </div>
+        )
+    ]
 
 };
 
 
 const Chatbox = () => {
+    // for all chat messages
     const [messages, setMessagesState] = React.useState<MessageProps[]>([]);
-    const [lastAIDiv, setLastAIDiv] = React.useState<HTMLDivElement | null>(null);
-    const [aiState, setAIState] = React.useState<AIChatState>({responding: false, response: "", lastAIDiv: lastAIDiv});
+
+    // for current ai state - check if responding or not
+    const [aiState, setAIState] = React.useState<AIChatState>({responding: false});
+    // for current message text
+    const [currAIText, setCurrAIText] = React.useState<MessageProps | null>(null);
 
     const chatboxRef = useRef(null);
     const [text, setText] = React.useState("");
+
 
     const handleTextChange  = (event: any) => {
         if (event.target.value.length > MAX_MESSAGE_LENGTH) {
@@ -98,37 +113,32 @@ const Chatbox = () => {
             console.log("there was no text");
             return;
         }
-
         // check if ai is responding
         if (aiState.responding) {
             // cannot send
             console.log("ai is responding");
             return;
         }
-
-        // add a user text object to the
-        // chat log
-        const newMessage = {chat_text: data, isAI: false};
-        setMessagesState([...messages, newMessage]);
-
+        
+        // reset text input box data
         setText("");
         console.log(data);
+        
+        // create new ai chat
+        const newAIChat = {chat_text: "", isAI: true, index: messages.length+2};
+        setCurrAIText(newAIChat);
+        // update necessary states -- chatResponse now contains current aichat data
+        // add a user text object to the chat log
+        const newMessage = {chat_text: data, isAI: false, index: messages.length+1};
+        setMessagesState([...messages, newMessage, newAIChat]);
 
+
+        // set ai state
         aiState.responding = true;
+        setAIState(aiState);
 
         // send a request to the server
-        fetch(BACKEND_IP + "/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({text: data})
-        }).then(response => {
-            console.log(response);
-
-            // TOOD -  create a new AI div + receive requests awaited or something
-
-        });
+        sendChatQuery(data);
         
     }
     const handleTextKeyDown = (event: any) => {
@@ -137,12 +147,51 @@ const Chatbox = () => {
             handleTextSubmit(event);
         }
     }
+    const sendChatQuery = async (message: string) => {
+        console.log("sending request: " + message);
+
+        const stream = await COHERE.chatStream({
+            model: 'command-r',
+            messages: [
+            {
+                role: 'user',
+                content: message,
+            },
+            ],
+        });
+        
+        for await (const chatEvent of stream) {
+            if (chatEvent === undefined){
+                continue;
+            }
+            if (chatEvent.type === 'content-delta') {
+                // chat event is defined
+                const cText = currAIText;
+                if (cText != null){
+                    cText.chat_text = cText.chat_text + chatEvent.delta?.message?.content?.text;
+                    console.log(currAIText);
+                    setCurrAIText(cText);
+                }
+            }else if(chatEvent.type === 'content-end'){
+                break;
+            }
+        }
+
+        // when done, update ai state
+        const state = aiState;
+        state.responding = false;
+        setAIState(state);
+    }
+
+    // testing
+
 
     // scroll to bottom of chatbox
     useEffect(() => {
         if (chatboxRef.current)
             chatboxRef.current.scrollTop = chatboxRef.current.scrollHeight;
     }, [messages]);
+
     return (
         <>
             <div className={"chatbox-container"}>
@@ -151,13 +200,15 @@ const Chatbox = () => {
                         <h1>Chatbox</h1>
                     </div>
                     <div className={"chatbox-scrollable"} ref={chatboxRef}>
-                        <AIChat chat_text={"Hello! I am a chatbot. How can I help you today?"}/>
-                        {messages.map((message, index) => (
+                        <AIChat chatData={"Hello! I am a chatbot. How can I help you today?"}/>
+                        {messages.map((message, _) => (
                             message.isAI ?
-                                <AIChat chat_text={message.chat_text} key={index}/>
+                                <AIChat chatData={message.chat_text} key={message.index}/>
                             :
-                                <UserChat chat_text={message.chat_text} key={index}/>
+                                <UserChat chat_text={message.chat_text} key={message.index}/>
                         ))}
+
+                        <AIChat chatData={currAIText != null ? currAIText?.chat_text : ""} key={currAIText?.index}/>
 
                         <div className="end-extra-space"></div>
                     </div>

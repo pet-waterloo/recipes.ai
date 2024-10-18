@@ -8,8 +8,11 @@ import logo from "../assets/logo.png";
 import BACKEND_IP from '../constants';
 
 
-const InfoTabCard = ({ image_url, card_title }) => {
-
+interface InfoTabProps {
+    image_url: string,
+    card_title: string
+}
+const InfoTabCard: React.FC<InfoTabProps> = ({ image_url, card_title }) => {
     return (
         <div className={"infotab-card"}>
             <img src={image_url} />
@@ -17,16 +20,13 @@ const InfoTabCard = ({ image_url, card_title }) => {
         </div>
     )
 }
-
 const InfoTabButton = () => {
-
     return (
         <div className={"infotab-button"}>
             <h1>InfoTabButton</h1>
         </div>
     )
 }
-
 
 
 const InfoTab = () => {
@@ -46,6 +46,7 @@ const InfoTab = () => {
                     <InfoTabCard
                         card_title = {`InfoTabCard ${index+1}`}
                         image_url = "https://upload.wikimedia.org/wikipedia/en/a/a6/Pok%C3%A9mon_Pikachu_art.png"
+                        key={index}
                     />
                 ))}
 
