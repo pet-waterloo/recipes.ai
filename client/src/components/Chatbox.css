@@ -66,7 +66,6 @@
     padding: 10px;
     border-radius: 5px;
     background-color: var(--theme-main);
-    color: white;
     cursor: pointer;
 
     box-shadow: var (--box-shadow);
@@ -131,6 +130,11 @@
     justify-content: flex-end;
     max-width: 70%;
     min-width: 30%;
+}
+
+
+.invisible-data{
+    display: none;
 }
 
 

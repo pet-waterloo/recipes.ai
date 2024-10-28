@@ -25,8 +25,14 @@ SECRET_KEY = "django-insecure-sfbes!cxr_6&x5v3%nbw649+q*yhhyf79#3fdc$7a2ga5069jp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [
+    "localhost",
+]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # Add your frontend URL here
+]
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_HEADERS = ["authorization", "content-type"]
 
 # Application definition
 
@@ -39,10 +45,14 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # -- space for new apps --
     "rest_framework",
+    "channels",
+    "corsheaders",
+    # my own apps
     "recipes",  # add new app here
     "api",
 ]
 
+ASGI_APPLICATION = "server.asgi.application"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -52,6 +62,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # other
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "server.urls"

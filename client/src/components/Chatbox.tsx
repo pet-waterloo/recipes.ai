@@ -1,13 +1,13 @@
-import React from 'react'
-import {useEffect, useRef} from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import axios from 'axios'
+import { CohereClientV2 } from 'cohere-ai'
+
+
+import sendIcon from '../assets/send.png'
+import {BACKEND_IP, MAX_MESSAGE_LENGTH} from '../constants'
 
 import './Chatbox.css'
 
-import sendIcon from '../assets/send.png'
-
-import {BACKEND_IP, MAX_MESSAGE_LENGTH} from '../constants'
-
-import { CohereClientV2 } from 'cohere-ai'
 
 
 const COHERE = new CohereClientV2({
@@ -15,182 +15,172 @@ const COHERE = new CohereClientV2({
 });
 
 
+
+// ----------------------------------- //
+
 interface ChatItemProps {
-    chat_text: string;
-    avatar_url?: string;
-};
-interface UserChatProps {
-    chat_text: string;
-};
-interface AIChatProps {
-    chatData: string;
-};
-interface MessageProps {
-    chat_text: string;
-    isAI: boolean;
-    index: number;
-};
-interface AIChatState {
-    responding: boolean;
-}
-interface ChatRequest {
-    message: string;
+    message: string,
+    avatar_url?: string,
+    ai: boolean,
 }
 
 
-const ChatItem: React.FC<ChatItemProps> = ({chat_text, avatar_url}) => {
+const ChatItem: React.FC<ChatItemProps> = ({message, avatar_url, ai}) => {
+
+    // attach a created date
+    const createdDate = new Date().toLocaleTimeString();
+    const classType = ai ? "ai" : "user";
+
     return (
         // add a conditional rendering to the
-        <div className={"chat-item"}>
-            {
-                avatar_url ? 
-                    <div className="chat-item-header">
-                        <img src={avatar_url}/>
-                    </div>
-                    : null
-            }
-
-            {/* turn input into a set of <p> objects for every new line */}
-            <div className="chat-item-text">
+        <div className={`${classType}-chat`}>
+        {/* // <div className={"ai-chat"}> */}
+            <div className={"chat-item"}>
+                {/* for icon image */}
+                <div className="invisible-data">
+                    <p className="created-date">{createdDate}</p>
+                </div>
                 {
-                    chat_text.split("\n").map((line, index) => (
-                        <p key={index}>{line}</p>
-                    ))
+                    avatar_url ? 
+                        <div className="chat-item-header">
+                            <img src={avatar_url}/>
+                        </div>
+                        : null
                 }
+
+                {/* turn input into a set of <p> objects for every new line */}
+                <div className="chat-item-text">
+                    {
+                        message.split("\n").map((line, index) => (
+                            <p key={index}>{line}</p>
+                        ))
+                    }
+                </div>
             </div>
         </div>
     )
 }
 
-const UserChat: React.FC<UserChatProps> = ({chat_text}) => {
-
-    // remove the div of class chat-item-header
-    // from the UserChat component
-
-    return (
-        <span className="user-chat">
-            <ChatItem chat_text={chat_text}/>
-        </span>
-    )
-}
-
-const AIChat: React.FC<AIChatProps> = ({chatData}) => {
-    return [
-        (
-            <div className="ai-chat">
-                <ChatItem chat_text={chatData} avatar_url={"https://upload.wikimedia.org/wikipedia/en/a/a6/Pok%C3%A9mon_Pikachu_art.png"}/>
-            </div>
-        )
-    ]
-
-};
-
 
 const Chatbox = () => {
-    // for all chat messages
-    const [messages, setMessagesState] = React.useState<MessageProps[]>([]);
+    const [chatboxRef, setChatboxRef] = React.useState(useRef<HTMLDivElement>(null));
+    const [messages, setMessages] = React.useState<ChatItemProps[]>([
+        {message: "Hello! I am a chatbot. Ask me anything!", ai: true}
+    ]);
+    
+    const [cObject, setCObject] = React.useState<ChatItemProps | null>(null);
+    const [inputTextState, setInputTextState] = React.useState<string>("");
 
-    // for current ai state - check if responding or not
-    const [aiState, setAIState] = React.useState<AIChatState>({responding: false});
-    // for current message text
-    const [currAIText, setCurrAIText] = React.useState<MessageProps | null>(null);
-
-    const chatboxRef = useRef(null);
-    const [text, setText] = React.useState("");
+    // -----------------------------------
+    // testing purposes
+    const [enableSendRequest, setEnableSendRequest] = React.useState<boolean>(false);
 
 
-    const handleTextChange  = (event: any) => {
-        if (event.target.value.length > MAX_MESSAGE_LENGTH) {
-            return;
-        }
-        // update text
-        setText(event.target.value);
+    // -----------------------------------
+    // text input objects + functions
+    const handleInputTextState = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setInputTextState(event.target.value);
+    };
+    
+    const handleInputTextSubmit = () => {
+        if (!enableSendRequest) return;
+        setEnableSendRequest(false);
+
+        console.log(inputTextState);
+        setInputTextState("");
+
+        // handle text request -- always a user request
+        handleNewMessage(inputTextState);
     }
-    const handleTextSubmit = (event: any) => {
-        var data = text;
-        // check if has text even
-        if (data.trim() === "") {
-            console.log("there was no text");
-            return;
-        }
-        // check if ai is responding
-        if (aiState.responding) {
-            // cannot send
-            console.log("ai is responding");
-            return;
-        }
-        
-        // reset text input box data
-        setText("");
-        console.log(data);
-        
-        // create new ai chat
-        const newAIChat = {chat_text: "", isAI: true, index: messages.length+2};
-        setCurrAIText(newAIChat);
-        // update necessary states -- chatResponse now contains current aichat data
-        // add a user text object to the chat log
-        const newMessage = {chat_text: data, isAI: false, index: messages.length+1};
-        setMessagesState([...messages, newMessage, newAIChat]);
 
-
-        // set ai state
-        aiState.responding = true;
-        setAIState(aiState);
-
-        // send a request to the server
-        sendChatQuery(data);
-        
-    }
-    const handleTextKeyDown = (event: any) => {
+    const handleInputTextKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (event.key === "Enter" && !event.shiftKey) {
+            // cancel the default action, if needed
             event.preventDefault();
-            handleTextSubmit(event);
+            if (!enableSendRequest) return;
+
+            // send request + disable request sending (until ai says otherwise)
+            handleInputTextSubmit();
         }
     }
-    const sendChatQuery = async (message: string) => {
-        console.log("sending request: " + message);
 
-        const stream = await COHERE.chatStream({
-            model: 'command-r',
-            messages: [
-            {
-                role: 'user',
-                content: message,
-            },
-            ],
-        });
-        
-        for await (const chatEvent of stream) {
-            if (chatEvent === undefined){
-                continue;
-            }
-            if (chatEvent.type === 'content-delta') {
-                // chat event is defined
-                const cText = currAIText;
-                if (cText != null){
-                    cText.chat_text = cText.chat_text + chatEvent.delta?.message?.content?.text;
-                    console.log(currAIText);
-                    setCurrAIText(cText);
+    // -----------------------------------
+    // handling new message creation + ai response
+
+    const handleNewResponse = async(query_string: string) => {
+        // create a new message
+        const newResponse : ChatItemProps = {message: query_string, ai: true};
+        setMessages([...messages, newResponse]);
+
+        // update message -> create copy of old + save it -> new message object
+        try{
+            const stream = await COHERE.chatStream(
+                {
+                    model: "command-r",
+                    messages: [
+                        {
+                            role: "user",
+                            content: query_string
+                        }
+                    ]
                 }
-            }else if(chatEvent.type === 'content-end'){
-                break;
-            }
-        }
+            );
 
-        // when done, update ai state
-        const state = aiState;
-        state.responding = false;
-        setAIState(state);
+            for await (const chatEvent of stream) {
+                if (chatEvent.type === "content-start" || chatEvent.type === "content-delta") {
+                    const text = chatEvent.delta?.message?.content?.text;
+                    console.log("AI message: ", text);
+                    
+                    const updatedMessage = { ...newResponse, message: newResponse.message + text };
+                    setCObject(updatedMessage);
+                }
+            }
+        } catch (error){
+            console.error(error);
+        }
+        
     }
 
-    // testing
+    const handleNewMessage = async (query_string: string) => {
+        // create a new message
+        const newMessage : ChatItemProps = {message: query_string, ai: false};
+        setMessages([...messages, newMessage]);
 
+        return fetch(`${BACKEND_IP}/api/ping`, {
+            method: "GET"
+        }).catch(
+            (error) => {
+                console.error(error);
+            }
+        ).then(
+            (response) => {
+                console.log(response);
+            }
+        );
 
-    // scroll to bottom of chatbox
+        // ping the server
+        // return fetch(`${BACKEND_IP}/api/ws/ai/`, {
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json"
+        //     },
+        //     body: JSON.stringify({
+        //         query: query_string
+        //     })
+        // });
+    }
+
+    // -----------------------------------
+    // set effect - updates
+
+    // scroll when load
     useEffect(() => {
         if (chatboxRef.current)
             chatboxRef.current.scrollTop = chatboxRef.current.scrollHeight;
     }, [messages]);
+    
+    // -----------------------------------
+    // render
 
     return (
         <>
@@ -200,22 +190,25 @@ const Chatbox = () => {
                         <h1>Chatbox</h1>
                     </div>
                     <div className={"chatbox-scrollable"} ref={chatboxRef}>
-                        <AIChat chatData={"Hello! I am a chatbot. How can I help you today?"}/>
-                        {messages.map((message, _) => (
-                            message.isAI ?
-                                <AIChat chatData={message.chat_text} key={message.index}/>
-                            :
-                                <UserChat chat_text={message.chat_text} key={message.index}/>
+                        {messages.map((data, index) => (
+                            <ChatItem message={data.message} ai={data.ai} key={index}/>
                         ))}
 
-                        <AIChat chatData={currAIText != null ? currAIText?.chat_text : ""} key={currAIText?.index}/>
+                        {/* <AIChat chatData={currAIText != null ? currAIText?.chat_text : ""} key={currAIText?.index}/> */}
 
                         <div className="end-extra-space"></div>
                     </div>
                 </div>
                 <div className="chatbox-text">
-                    <textarea value={text} onChange={handleTextChange} onKeyDown={handleTextKeyDown} placeholder="Type a message..." />
-                    <button onClick={handleTextSubmit}>
+                    <textarea value={inputTextState} onChange={handleInputTextState} onKeyDown={handleInputTextKeyDown} placeholder="Type a message..." />
+                    <label className="toggle-switch">
+                            Enable Test Sending?
+                            <input type="checkbox" checked={enableSendRequest} onChange={() => {
+                                setEnableSendRequest(!enableSendRequest);
+                            }} />
+                            <span className="slider"></span>
+                        </label>
+                    <button onClick={handleInputTextSubmit}>
                         <img src={sendIcon} width={32} height={32} alt="sendicon" />
                     </button>
                 </div>

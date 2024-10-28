@@ -19,15 +19,16 @@ from django.contrib import admin
 from django.urls import path
 
 from .views import PingView
+from .consumers import CohereConsumer
 
 urlpatterns = [
     # api
     # path("ai/", RecipeListCreateView.as_view(), name="ai-prompt"),
-
     # pinging
     path("ping/", PingView.as_view(), name="ping"),
-
-]   
+    # include the websocket url
+    path("ws/ai/", CohereConsumer.as_asgi()),
+]
 
 
 # https://docs.djangoproject.com/en/5.1/topics/auth/default/#:~:text=If%20you%20have%20an%20authenticated,with%20a%20login()%20function.&text=To%20log%20a%20user%20in,session%2C%20using%20Django's%20session%20framework.

@@ -6,20 +6,20 @@
   --border-radius: 5px;
   --box-shadow: 0 0 10px 3px rgba(0, 0, 0, 0.1);
 
-  --theme-main: #A2FFCC;
-  --theme-main-dark: #00b894;
+  --theme-main: #313E50;
+  --theme-main-dark: #3A435E;
 
-  --theme-secondary: #c0f9da;
-  --theme-secondary-dark: #93cead;
+  --theme-secondary: #455561;
+  --theme-secondary-dark: #5C6672;
 
-  --theme-tertiary: #d9ffea;
-  --theme-tertiary-dark: #b8e3db;
+  --theme-tertiary: #6C6F7F;
+  --theme-tertiary-dark: #595B67;
 }
 
 html, body {
   display: flex;
 
-  background: linear-gradient(180deg, #ffffff, #CCFFe3);
+  background: linear-gradient(180deg, var(--theme-tertiary), var(--theme-main));
   justify-content: center;
   
   margin: 0px;
@@ -39,7 +39,7 @@ html, body {
 
   font-family: "Inter", sans-serif;
   font-weight: bold;
-  color: black;
+  color: white;
 }
 
 .container {
