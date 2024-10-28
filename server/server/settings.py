@@ -20,41 +20,42 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-sfbes!cxr_6&x5v3%nbw649+q*yhhyf79#3fdc$7a2ga5069jp"
+SECRET_KEY = "django-insecure-un8+4gdsrj0r4-q53pfb*em1(+wv_x)tzet3b@km0(w)*=gt@a"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    "localhost",
-]
+ALLOWED_HOSTS = []
+
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Add your frontend URL here
+    "http://localhost:5173",
 ]
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_HEADERS = ["authorization", "content-type"]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = ["content-type", "authorization"]
+
 
 # Application definition
 
 INSTALLED_APPS = [
+    # rest + cors
+    "rest_framework",
+    "corsheaders",
+    # django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # -- space for new apps --
-    "rest_framework",
-    "channels",
-    "corsheaders",
-    # my own apps
-    "recipes",  # add new app here
+    # custom apps
     "api",
 ]
 
-ASGI_APPLICATION = "server.asgi.application"
-
 MIDDLEWARE = [
+    # cors
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",  # to handle HTTP methods
+    # django
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -62,8 +63,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    # other
-    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "server.urls"
@@ -92,12 +91,8 @@ WSGI_APPLICATION = "server.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "recipesaidb",
-        "USER": "recipesai",
-        "PASSWORD": "thepassword",
-        "HOST": "localhost",
-        "PORT": "5432",
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
