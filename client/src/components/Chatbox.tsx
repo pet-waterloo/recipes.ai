@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import axios from 'axios'
 import { CohereClientV2 } from 'cohere-ai'
 
 
@@ -94,7 +95,6 @@ const Chatbox = () => {
         // handleNewMessage(inputTextState);
         // cohere does its job now
         handleNewResponse(inputTextState);
-        setEnableSendRequest(true);
     }
 
     const handleInputTextKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -137,31 +137,34 @@ const Chatbox = () => {
             );
 
             for await (const chatEvent of stream) {
-            if (chatEvent.type === "content-start" || chatEvent.type === "content-delta") {
-                const text = chatEvent.delta?.message?.content?.text || '';
-                
-                // Update newResponse.message with incoming text
-                newResponse.message += text;
+                if (chatEvent.type === "content-start" || chatEvent.type === "content-delta") {
+                    const text = chatEvent.delta?.message?.content?.text || '';
+                    
+                    // Update newResponse.message with incoming text
+                    newResponse.message += text;
 
-                // Set the state using a functional update to ensure it's up-to-date
-                setMessages((prevMessages) => {
-                    // Replace or append to the specific message in your message list
-                    const updatedMessages = [...prevMessages];
-                    const lastIndex = updatedMessages.length - 1;
+                    // Set the state using a functional update to ensure it's up-to-date
+                    setMessages((prevMessages) => {
+                        // Replace or append to the specific message in your message list
+                        const updatedMessages = [...prevMessages];
+                        const lastIndex = updatedMessages.length - 1;
 
-                    // If this message is already being streamed, update it
-                    if (lastIndex >= 0 && updatedMessages[lastIndex].created === newResponse.created) {
-                        updatedMessages[lastIndex].message = newResponse.message;
-                    } else {
-                        // If it's a new message, push it to the array
-                        updatedMessages.push({ created: new Date().getTime(), message: newResponse.message, ai: true });
-                    }
-                    return updatedMessages;
-                });
+                        // If this message is already being streamed, update it
+                        if (lastIndex >= 0 && updatedMessages[lastIndex].created === newResponse.created) {
+                            updatedMessages[lastIndex].message = newResponse.message;
+                        } else {
+                            // If it's a new message, push it to the array
+                            updatedMessages.push({ created: new Date().getTime(), message: newResponse.message, ai: true });
+                        }
+                        return updatedMessages;
+                    });
+                }
             }
-        }
         } catch (error){
             console.error(error);
+        } finally {
+            // finally reset the stuff
+            setEnableSendRequest(true);
         }
     }
 

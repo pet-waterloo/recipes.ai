@@ -83,11 +83,18 @@
     display: flex;
     flex-direction: row;
     gap: 5px;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    overflow: hidden;
 
     padding: 5px 15px;
 
     border-radius: var(--border-radius);
     background-color: var(--theme-tertiary-dark);
+}
+
+.chat-item * p {
+    white-space: pre-wrap;
 }
 
 .chat-item img {
@@ -106,6 +113,8 @@
 
 .chat-item-text {
     font-weight: normal;
+    max-width: 100%;
+    
 }
 
 /*  */
