@@ -167,7 +167,7 @@ const Chatbox = () => {
                             updatedMessages[lastIndex].content = newResponse.content;
                         } else {
                             // If it's a new message, push it to the array
-                            updatedMessages.push({ created: new Date().getTime(), content: newResponse.message, ai: true });
+                            updatedMessages.push({ created: new Date().getTime(), content: newResponse.content, ai: true });
                         }
                         return updatedMessages;
                     });
