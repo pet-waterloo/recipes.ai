@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # custom apps
     "api",
+    "conversation",
 ]
 
 MIDDLEWARE = [
@@ -91,8 +92,12 @@ WSGI_APPLICATION = "server.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "recipesaidb",
+        "USER": "recipesai_user",
+        "PASSWORD": "password",
+        "HOST": "localhost",
+        "PORT": "5432",
     }
 }
 
@@ -121,7 +126,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "EST"
 
 USE_I18N = True
 

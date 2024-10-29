@@ -18,9 +18,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from .views import PingView, CountdownTimerView
+from .views import PingView
 
 urlpatterns = [
     path("api/ping", PingView.as_view()),
-    path("api/countdown", CountdownTimerView.as_view()),
 ]
