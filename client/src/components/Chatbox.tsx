@@ -4,7 +4,7 @@ import { CohereClientV2 } from 'cohere-ai'
 
 
 import sendIcon from '../assets/send.png'
-import {BACKEND_IP, MAX_MESSAGE_LENGTH} from '../constants'
+import {BACKEND_IP, MAX_QUERY_LENGTH, MAX_RESPONSE_TOKENS } from '../constants'
 
 import './Chatbox.css'
 
@@ -19,14 +19,14 @@ const COHERE = new CohereClientV2({
 // ----------------------------------- //
 
 interface ChatItemProps {
-    message: string,
+    content: string,
     avatar_url?: string,
     ai: boolean,
     created: number
 }
 
 
-const ChatItem: React.FC<ChatItemProps> = ({message, avatar_url, ai, created}) => {
+const ChatItem: React.FC<ChatItemProps> = ({content, avatar_url, ai, created}) => {
 
     // attach a created date
     const classType = ai ? "ai" : "user";
@@ -51,7 +51,7 @@ const ChatItem: React.FC<ChatItemProps> = ({message, avatar_url, ai, created}) =
                 {/* turn input into a set of <p> objects for every new line */}
                 <div className="chat-item-text">
                     {
-                        message.split("\n").map((line, index) => (
+                        content.split("\n").map((line, index) => (
                             <p key={index}>{line}</p>
                         ))
                     }
@@ -65,7 +65,7 @@ const ChatItem: React.FC<ChatItemProps> = ({message, avatar_url, ai, created}) =
 const Chatbox = () => {
     const [chatboxRef, setChatboxRef] = React.useState(useRef<HTMLDivElement>(null));
     const [messages, setMessages] = React.useState<ChatItemProps[]>([
-        {message: "Hello! I am a chatbot. Ask me anything!", ai: true, created: new Date().getTime()}
+        {content: "Hello! I am a chatbot. Ask me anything!", ai: true, created: new Date().getTime()}
     ]);
     
     const [cObject, setCObject] = React.useState<ChatItemProps | null>(null);
@@ -81,6 +81,9 @@ const Chatbox = () => {
     // -----------------------------------
     // text input objects + functions
     const handleInputTextState = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        if (event.target.value.length > MAX_QUERY_LENGTH)
+            // prevents changes
+            return;
         setInputTextState(event.target.value);
     };
     
@@ -113,12 +116,21 @@ const Chatbox = () => {
 
     const handleNewResponse = async(query_string: string) => {
         // create a new message
-        const newMessage : ChatItemProps = {message: query_string, ai: false, created: new Date().getTime()};
+        const newMessage : ChatItemProps = {content: query_string, ai: false, created: new Date().getTime()};
         var cMessages = [...messages, newMessage];
         console.log(query_string);
         setMessages(cMessages);
 
-        var newResponse : ChatItemProps = {message: "", ai: true, created: new Date().getTime()};
+        // post the data to backend
+        const response = await fetch(`${BACKEND_IP}/conversation/messages/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newMessage)
+        });
+
+        var newResponse : ChatItemProps = {content: "", ai: true, created: new Date().getTime()};
         cMessages = [...cMessages, newResponse];
         setMessages(cMessages);
 
@@ -132,7 +144,8 @@ const Chatbox = () => {
                             role: "user",
                             content: query_string
                         }
-                    ]
+                    ],
+                    maxTokens: MAX_RESPONSE_TOKENS
                 }
             );
 
@@ -141,7 +154,7 @@ const Chatbox = () => {
                     const text = chatEvent.delta?.message?.content?.text || '';
                     
                     // Update newResponse.message with incoming text
-                    newResponse.message += text;
+                    newResponse.content += text;
 
                     // Set the state using a functional update to ensure it's up-to-date
                     setMessages((prevMessages) => {
@@ -151,10 +164,10 @@ const Chatbox = () => {
 
                         // If this message is already being streamed, update it
                         if (lastIndex >= 0 && updatedMessages[lastIndex].created === newResponse.created) {
-                            updatedMessages[lastIndex].message = newResponse.message;
+                            updatedMessages[lastIndex].content = newResponse.content;
                         } else {
                             // If it's a new message, push it to the array
-                            updatedMessages.push({ created: new Date().getTime(), message: newResponse.message, ai: true });
+                            updatedMessages.push({ created: new Date().getTime(), content: newResponse.message, ai: true });
                         }
                         return updatedMessages;
                     });
@@ -190,7 +203,7 @@ const Chatbox = () => {
                     </div>
                     <div className={"chatbox-scrollable"} ref={chatBoxRef}>
                         {messages.map((data, index) => (
-                            <ChatItem message={data.message} ai={data.ai} created={data.created} key={index}/>
+                            <ChatItem content={data.content} ai={data.ai} created={data.created} key={index}/>
                         ))}
 
                         {/* <AIChat chatData={currAIText != null ? currAIText?.chat_text : ""} key={currAIText?.index}/> */}
