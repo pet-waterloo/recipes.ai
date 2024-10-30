@@ -18,10 +18,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-
+from .views import LoginView, NewUserView
 from .views import MessageCreateView
 
 
 urlpatterns = [
-    path("messages/", MessageCreateView.as_view(), name="message-create"),
+    path("conversation/messages/", MessageCreateView.as_view(), name="message-create"),
+    # main routes
+    path("user/login/", LoginView.as_view()),
+    path("user/register/", NewUserView.as_view()),
 ]

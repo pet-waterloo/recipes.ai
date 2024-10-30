@@ -15,3 +15,6 @@ class PingView(APIView):
 
         resp = {"message": "pong", "status": status.HTTP_200_OK}
         return Response(resp)
+
+
+# ------------------------------------------------------------
