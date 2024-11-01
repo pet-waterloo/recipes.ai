@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from django.utils import timezone
+from django.contrib.auth.hashers import check_password
 
 from .serializers import MessageSerializer, UserSerializer
 from .models import User
@@ -30,12 +31,31 @@ class MessageCreateView(APIView):
 class LoginView(APIView):
 
     def post(self, request):
-        print(request.data)
+        rdata = request.data
+        print(rdata)
 
         # check if a user with the given email + password exists
+        email = rdata["email"]
+        user = User.objects.filter(email=email)
+        if not user.exists():
+            resp = {"accepted": False, "reason": "User with email does not exist"}
+            return Response(resp)
 
-        resp = {"body": "nothing", "status": status.HTTP_200_OK}
-        return Response(resp)
+        user = user.first()
+        if check_password(rdata["password"], user.password):
+            resp = {
+                "accepted": True,
+                "user_hash": user.user_id,
+                "reason": "User with email exists and password is correct",
+            }
+            return Response(resp)
+
+        return Response(
+            {
+                "accepted": False,
+                "reason": "User with email eixsts but password is incorrect",
+            }
+        )
 
 
 class NewUserView(APIView):

@@ -18,12 +18,7 @@ const COHERE = new CohereClientV2({
 
 // ----------------------------------- //
 
-interface ChatItemProps {
-    content: string,
-    avatar_url?: string,
-    ai: boolean,
-    created: number
-}
+import { ChatItemProps } from '../assets/Objects'
 
 
 const ChatItem: React.FC<ChatItemProps> = ({content, avatar_url, ai, created}) => {
@@ -121,20 +116,21 @@ const Chatbox = () => {
         console.log(query_string);
         setMessages(cMessages);
 
-        // post the data to backend
-        const response = await fetch(`${BACKEND_IP}/conversation/messages/`, {
+        // post query data to backend
+        await fetch(`${BACKEND_IP}/conversation/messages/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(newMessage)
         });
-
+        
+        // create response objects
         var newResponse : ChatItemProps = {content: "", ai: true, created: new Date().getTime()};
         cMessages = [...cMessages, newResponse];
         setMessages(cMessages);
 
-        // update message -> create copy of old + save it -> new message object
+        // send the query to cohere
         try{
             const stream = await COHERE.chatStream(
                 {
@@ -173,6 +169,16 @@ const Chatbox = () => {
                     });
                 }
             }
+
+            // send cohere response to backend
+            await fetch(`${BACKEND_IP}/conversation/messages/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newResponse)
+            });
+            
         } catch (error){
             console.error(error);
         } finally {

@@ -5,13 +5,13 @@ import React from 'react';
 import './InfoTab.css';
 import logo from "../assets/logo.png";
 
-import BACKEND_IP from '../constants';
+import {BACKEND_IP} from '../constants';
 
 
-interface InfoTabProps {
-    image_url: string,
-    card_title: string
-}
+// ----------------------------------- //
+import { InfoTabProps } from '../assets/Objects'
+
+
 const InfoTabCard: React.FC<InfoTabProps> = ({ image_url, card_title }) => {
     return (
         <div className={"infotab-card"}>
