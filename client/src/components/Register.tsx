@@ -9,7 +9,7 @@ import { BACKEND_IP } from "../constants";
 
 // ----------------------------------- //
 
-const Register = (editCUserFunc: (user: UserDataObject | null) => void) => {
+const Register = () => {
     const [registerData, setRegisterData] = React.useState<UserDataObject | null>(null);
     const emailRef = React.useRef<HTMLInputElement>(null);
     const passwordRef = React.useRef<HTMLInputElement>(null);

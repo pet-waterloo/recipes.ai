@@ -2,6 +2,8 @@
 
 Hello! Welcome to the recipes.ai github project.
 
+![Chatbot UI](docs/chatbot.png)
+
 As a university student, I don't have all the time in the world (especially as an engineering student 😭). This also means that I don't have all the time in the world to cook amazing food for myself, or do research for new dishes and meals that would save more time.
 
 Additionally, a lot of my friends do not even know how to cook.

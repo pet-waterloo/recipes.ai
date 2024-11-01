@@ -16,17 +16,16 @@ import Register from './components/Register'
 
 function App() {
   const [cUser, setCUser] = React.useState<UserDataObject | null>(null);
-  
-  console.log("Current User: ", cUser);
 
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<Login editCUserFunc={setCUser}/>}/>
-        <Route path="/register" element={<Register editCUserFunc={setCUser}/>}/>
+        <Route path="/login" element={<Login/>}/>
+        <Route path="/register" element={<Register/>}/>
         
         <Route path="/" element={
-          cUser !== null ? <>
+          cUser !== null ? 
+          <>
             <link rel="preconnect" href="https://fonts.googleapis.com" />
             <link rel="preconnect" href="https://fonts.gstatic.com" />
             <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet"></link>
@@ -39,10 +38,11 @@ function App() {
               </div>
               
             </div>
-          </> : (
+          </> 
+          : (
             // react redirect
             <Navigate to="/login" />
-          )
+          ) 
         }/>
       </Routes>
     </Router>

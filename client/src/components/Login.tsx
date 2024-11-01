@@ -11,7 +11,7 @@ import { BACKEND_IP } from '../constants';
 
 // the function will
 // take in no arguments
-const Login = (editCUserFunc: (user: UserDataObject | null) => void) => {
+const Login = () => {
 
     const [loginData, setLoginData] = React.useState<UserLoginObject | null>(null);
     const emailRef = React.useRef<HTMLInputElement>(null);
