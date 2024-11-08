@@ -26,7 +26,7 @@ const Login = () => {
             console.log("Invalid Email");
             // TODO - implement notification system
             e.preventDefault();
-            return ;   
+            return ;
         }
 
         e.preventDefault();
@@ -45,9 +45,16 @@ const Login = () => {
                 })
             }
         ).then((resp) => {
-
-            const val = resp.json().then((data) => console.log(data));
-
+            const val = resp.json().then((data) => {
+                // check the response
+                console.log(data);
+                if (data.accepted === true) {
+                    // get login data
+                    console.log(data.user_hash);
+                    localStorage.setItem('cUser', data.user_hash);
+                    navigate('/');
+                }
+            });
         });
 
     }

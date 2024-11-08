@@ -33,6 +33,10 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = ["content-type", "authorization"]
 
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_SECURE = True  # send cookies over https only
 
 # Application definition
 
@@ -58,7 +62,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",  # to handle HTTP methods
     # django
     "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",  # required for sessions
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",

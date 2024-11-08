@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.contrib.auth.hashers import make_password
 
@@ -57,3 +57,16 @@ class UserData(models.Model):
 
     def __str__(self):
         return f"User ID: {self.user_id} Conversations: {len(self.conversations)} Stats: {self.stats}"
+
+
+# -------------------------------- #
+# session info
+
+
+class Session(models.Model):
+    session_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    user_id = models.CharField(max_length=64, unique=True, blank=False)
+    expire_date = models.DateTimeField(default=datetime.now() + timedelta(weeks=2))
+
+    def __str__(self):
+        return f"Session ID: {self.session_id} User ID: {self.user_id} Expires: {self.expire_date}"

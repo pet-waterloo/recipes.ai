@@ -10,7 +10,6 @@ import { BACKEND_IP } from "../constants";
 // ----------------------------------- //
 
 const Register = () => {
-    const [registerData, setRegisterData] = React.useState<UserDataObject | null>(null);
     const emailRef = React.useRef<HTMLInputElement>(null);
     const passwordRef = React.useRef<HTMLInputElement>(null);
     const confirmPasswordRef = React.useRef<HTMLInputElement>(null);
@@ -60,10 +59,13 @@ const Register = () => {
             }
         ).then((resp) => {
             resp.json().then((data) => {
-                console.log(data)
+                console.log(data);
                 if (data.accepted === true){
                     console.log("User Registered");
-                    return;
+                    // save login data to localstorage
+                    localStorage.setItem('cUser', data.session_id);
+                    // redirect to login page
+                    return navigate("/");
                 } else {
 
                 }

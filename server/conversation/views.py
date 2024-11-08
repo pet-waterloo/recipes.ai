@@ -5,13 +5,42 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from django.utils import timezone
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.hashers import check_password
 
-from .serializers import MessageSerializer, UserSerializer
-from .models import User
+from .serializers import MessageSerializer, UserSerializer, SessionSerializer
+from .models import User, Session
 
 import uuid
 import json
+
+
+# -------------------------------- #
+class SessionManager:
+
+    @classmethod
+    def check_or_generate(cls, user):
+
+        # check if session already linked to a user
+        user_id = user.user_id
+        if Session.objects.filter(user_id=user_id).exists():
+            # delete the session first
+            session = Session.objects.get(user_id=user_id)
+            session.delete()
+        # create a new session + save it
+        session = Session()
+        session.user_id = user.user_id
+        session.session_id = uuid.uuid4()
+        session.expire_date = timezone.now() + timezone.timedelta(weeks=2)
+        session.save()
+
+        return session
+
+    @classmethod
+    def verify(cls, session_id):
+        if not Session.objects.filter(session_id=session_id).exists():
+            return None
+        return Session.objects.get(session_id=session_id)
 
 
 # Create your views here.
@@ -32,7 +61,6 @@ class LoginView(APIView):
 
     def post(self, request):
         rdata = request.data
-        print(rdata)
 
         # check if a user with the given email + password exists
         email = rdata["email"]
@@ -42,11 +70,24 @@ class LoginView(APIView):
             return Response(resp)
 
         user = user.first()
+
+        # check if the password is correct
         if check_password(rdata["password"], user.password):
+            # create session info
+            # cannot use "login" because we aren't using
+            # built in django user object
+
+            # since the user logged in validly, check_or_gen
+            ssid = SessionManager.check_or_generate(user)
+
+            # return response with session_id, user_id, and expire date
+            # TODO - consider encrypting
             resp = {
                 "accepted": True,
+                "session_id": ssid.session_id,
                 "user_hash": user.user_id,
-                "reason": "User with email exists and password is correct",
+                "expire_date": ssid.expire_date,
+                "reason": "Successfully logged in",
             }
             return Response(resp)
 
@@ -79,7 +120,19 @@ class NewUserView(APIView):
         if serializer.is_valid():
             serializer.save()
             print(serializer.data)
-            resp = {"accepted": True, "userdata": rdata}
+
+            # create user session info (log them in)
+            user = User.objects.get(user_id=rdata["user_id"])
+            ssid = SessionManager.check_or_generate(user)
+
+            # return response with session_id, user_id, and expire date
+            resp = {
+                "accepted": True,
+                "session_id": ssid.session_id,
+                "user_hash": user.user_id,
+                "expire_date": ssid.expire_date,
+                "reason": "User created successfully",
+            }
             return Response(resp)
 
         # could not save the data
