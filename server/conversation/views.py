@@ -18,7 +18,7 @@ from .serializers import (
     UserSerializer,
     SessionSerializer,
 )
-from .models import User, Session
+from .models import User, Session, Message
 
 import uuid
 import json
@@ -59,15 +59,40 @@ class SessionManager:
 # Create your views here.
 class MessageCreateView(APIView):
     def post(self, request):
+        """Create a new message"""
         serializer = MessageSerializer(data=request.data)
-
-        print(request.data)
 
         if serializer.is_valid():
             serializer.save()
+            print(request.data, serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         # could not save the data
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request):
+        """
+        Get a message
+
+
+        http://server/?message_ids=id1%20id2%20id3
+        """
+        rdata = request.GET.dict()
+        message_ids = list(map(int, rdata["message_ids"].split(" ")))
+
+        # retrieve messages
+        result = {"messages": {}}
+        for msg in message_ids:
+            message = Message.objects.get(id=msg)
+            result["messages"][msg] = {
+                "content": message.content,
+                "ai": message.ai,
+                "created_at": message.created_at,
+            }
+
+        print(result)
+
+        # return messages
+        return Response(result, status=status.HTTP_200_OK)
 
 
 class SessionVerifyView(APIView):

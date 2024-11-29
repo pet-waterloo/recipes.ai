@@ -15,7 +15,6 @@ const COHERE = new CohereClientV2({
 });
 
 
-
 // ----------------------------------- //
 
 import { ChatItemProps } from '../assets/Objects'
