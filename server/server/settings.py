@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import json
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -34,16 +35,20 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = ["content-type", "authorization"]
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
-SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_COOKIE_AGE = 3600  # 1 hr
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_SECURE = True  # send cookies over https only
+
+GOOGLE_AUTH_CLIENT = (
+    "577814076163-11bqhgk9no5kajb0d9r2lmq1dthkd6pe.apps.googleusercontent.com"
+)
+
+
+SITE_ID = 1
 
 # Application definition
 
 INSTALLED_APPS = [
-    # rest + cors
-    "rest_framework",
-    "corsheaders",
     # django
     "django.contrib.admin",
     "django.contrib.auth",
@@ -51,15 +56,16 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # rest + cors
+    "rest_framework",
+    "corsheaders",
     # custom apps
     "api",
+    "user_auth",
     "conversation",
 ]
 
 MIDDLEWARE = [
-    # cors
-    "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.common.CommonMiddleware",  # to handle HTTP methods
     # django
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",  # required for sessions
@@ -68,6 +74,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # cors
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",  # to handle HTTP methods
 ]
 
 ROOT_URLCONF = "server.urls"
@@ -146,3 +155,23 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# allauth settings
+LOGIN_DIRECT_URL = "/login"
+LOGIN_REDIRECT_URL = "/"
+
+BACKEND_BASE_URL = "http://localhost:8000"
+FRONTEND_BASE_URL = "http://localhost:5173"
+
+# ================================= #
+# google oauth information
+
+with open("../.secrets", "r") as f:
+    secrets = json.load(f)
+
+GOOGLE_CLIENT_ID = secrets["GOOGLE_CLIENT_ID"]
+GOOGLE_CLIENT_SECRET = secrets["GOOGLE_CLIENT_SECRET"]
+GOOGLE_TOKEN_URI = secrets["GOOGLE_TOKEN_URI"]
+GOOGLE_AUTH_URI = secrets["GOOGLE_AUTH_URI"]
+GOOGLE_USERINFO_API = secrets["GOOGLE_USERINFO_API"]

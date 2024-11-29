@@ -24,4 +24,6 @@ urlpatterns = [
     path("", include("api.urls")),
     # conversation api routes
     path("", include("conversation.urls")),
+    # auth api rotues
+    path("auth/", include("user_auth.urls")),
 ]

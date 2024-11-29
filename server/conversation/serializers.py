@@ -12,10 +12,11 @@ class UserSerializer(serializers.ModelSerializer):
 
     user_id = serializers.UUIDField(format="hex", required=True)
     created_at = serializers.DateTimeField(required=True)
+    social_login = serializers.BooleanField(required=True)
 
     class Meta:
         model = User
-        fields = ["id", "user_id", "created_at", "email", "password"]
+        fields = ["id", "user_id", "created_at", "email", "password", "social_login"]
 
 
 class SessionSerializer(serializers.ModelSerializer):

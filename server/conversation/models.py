@@ -36,6 +36,7 @@ class User(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, blank=False)
     email = models.EmailField(max_length=64, unique=True, blank=False)
     password = models.CharField(max_length=88, blank=False)
+    social_login = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.pk or "password" in self.get_dirty_fields():
@@ -46,7 +47,7 @@ class User(models.Model):
     # make sure to link email eventually
 
     def __str__(self):
-        return f"User ID: {self.user_id} Created: {self.created_at}"
+        return f"User ID: {self.user_id} Created: {self.created_at} | Social?: {self.social_login}"
 
 
 class UserData(models.Model):

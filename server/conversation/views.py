@@ -8,7 +8,16 @@ from django.utils import timezone
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.hashers import check_password
 
-from .serializers import MessageSerializer, UserSerializer, SessionSerializer
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from django.conf import settings
+
+
+from .serializers import (
+    MessageSerializer,
+    UserSerializer,
+    SessionSerializer,
+)
 from .models import User, Session
 
 import uuid
@@ -40,7 +49,11 @@ class SessionManager:
     def verify(cls, session_id):
         if not Session.objects.filter(session_id=session_id).exists():
             return None
-        return Session.objects.get(session_id=session_id)
+        session = Session.objects.get(session_id=session_id)
+        if session.expire_date < timezone.now():
+            session.delete()
+            return None
+        return session
 
 
 # Create your views here.
@@ -57,7 +70,26 @@ class MessageCreateView(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+class SessionVerifyView(APIView):
+    """/user/verify/"""
+
+    def get(self, request):
+        """Create new session id"""
+        pass
+
+    def post(self, request):
+        """Verify if a session id is valid"""
+        rdata = request.data
+        session_id = rdata["session_id"]
+
+        # check if session_id is still valid
+        if SessionManager.verify(session_id):
+            return Response({"accepted": True, "reason": "Session is valid"})
+        return Response({"accepted": False, "reason": "Session is invalid"})
+
+
 class LoginView(APIView):
+    """user/login/"""
 
     def post(self, request):
         rdata = request.data
@@ -70,6 +102,19 @@ class LoginView(APIView):
             return Response(resp)
 
         user = user.first()
+
+        # check if is user google oauth login!
+        if user.social_login:
+            # TODO - find a way to create a notification system with react!
+            # that soudns pretty simple right?
+            # also this code base is pretty messy ngl
+            #           but first project vibes hit really hard
+            return Response(
+                {
+                    "accepted": False,
+                    "reason": "User with email is a google oauth user",
+                }
+            )
 
         # check if the password is correct
         if check_password(rdata["password"], user.password):
@@ -85,7 +130,6 @@ class LoginView(APIView):
             resp = {
                 "accepted": True,
                 "session_id": ssid.session_id,
-                "user_hash": user.user_id,
                 "expire_date": ssid.expire_date,
                 "reason": "Successfully logged in",
             }
@@ -115,11 +159,12 @@ class NewUserView(APIView):
         # create new user
         rdata["user_id"] = uuid.uuid4()
         rdata["created_at"] = timezone.now()
+        rdata["social_login"] = False
         serializer = UserSerializer(data=rdata)
 
         if serializer.is_valid():
             serializer.save()
-            print(serializer.data)
+            print("DATA: ", serializer.data)
 
             # create user session info (log them in)
             user = User.objects.get(user_id=rdata["user_id"])
@@ -128,11 +173,12 @@ class NewUserView(APIView):
             # return response with session_id, user_id, and expire date
             resp = {
                 "accepted": True,
-                "session_id": ssid.session_id,
+                "session_id": str(ssid.session_id),
                 "user_hash": user.user_id,
                 "expire_date": ssid.expire_date,
                 "reason": "User created successfully",
             }
+            print(resp)
             return Response(resp)
 
         # could not save the data

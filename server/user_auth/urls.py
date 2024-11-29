@@ -15,17 +15,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
 
-from .views import LoginView, NewUserView, SessionVerifyView
-from .views import MessageCreateView
-
+from .views import get_google_callback
 
 urlpatterns = [
-    path("conversation/messages/", MessageCreateView.as_view(), name="message-create"),
-    # main routes
-    path("user/login/", LoginView.as_view()),
-    path("user/register/", NewUserView.as_view()),
-    path("user/verify/", SessionVerifyView.as_view()),
+    path("google-callback/", get_google_callback),
 ]
